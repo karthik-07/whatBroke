@@ -3,6 +3,9 @@
 from whatbroke.collectors.errors import collect_errors, boot_selector
 from whatbroke.reporting.errors import render_errors
 
+from whatbroke.analysis.compare import collect_comparison
+from whatbroke.reporting.compare import render_comparison
+
 import argparse
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -26,7 +29,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="whatbroke",
         description="Inspect Linux package and boot history (early development).",
-        epilog="Boot comparison and failure diagnosis are not implemented yet.",
+        epilog="Package-change correlation and cause diagnosis are not implemented yet.",
     )
     try:
         package_version = version("whatbroke")
@@ -46,10 +49,19 @@ def main(argv: list[str] | None = None) -> int:
                         help="current (default), journal index, or 32-character boot ID")
     errors.add_argument("--limit", type=positive_integer, default=20,
                         help="number of final errors displayed (default: 20)")
+    compare = commands.add_parser("compare", help="compare error signatures across boots")
+    compare.add_argument("--boot", type=boot_selector, default="current",
+                         help="target boot: current (default), index, or boot ID")
+    compare.add_argument("--previous", type=positive_integer, default=5,
+                         help="number of earlier visible boots to compare (default: 5)")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
+    if args.command == "compare":
+        result = collect_comparison(args.boot, args.previous)
+        print(render_comparison(result))
+        return 0 if result.status == SourceStatus.AVAILABLE else 1
     if args.command == "errors":
         result = collect_errors(args.boot)
         print(render_errors(result, args.limit))

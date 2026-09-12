@@ -8,8 +8,8 @@ Linux failures and show the system changes that preceded them. The first target 
 
 **Status: early development.** Pacman package-history collection is implemented,
 including log availability, observed history ranges, and package changes. System
-journal boot-history and per-boot error collection are also available. Boot
-comparison and correlation are still planned.
+journal boot-history, per-boot errors, and error-signature comparison are available.
+Package-change correlation is still planned.
 
 ## How it will work
 
@@ -151,6 +151,50 @@ when present; output escapes terminal control characters.
 Exit codes are `0` for available collection (including zero matching errors), `1`
 for incomplete or unavailable collection, and `2` for invalid arguments. As with
 `boots`, sudo is suggested only when journal diagnostics indicate restricted access.
+
+## Compare boots
+
+```sh
+whatbroke compare                         # Current boot vs up to 5 earlier boots
+whatbroke compare --previous 15
+whatbroke compare --boot -1 --previous 5  # An earlier target and its predecessors
+```
+
+Groups target errors by service/source and normalized message, then reports each
+signature as **newly observed**, **recurring**, or **insufficient history**. Reports
+include target counts, individual baseline-boot counts, original example messages,
+boot IDs, observed time ranges, and requested/selected/usable boot counts.
+
+Normalization currently strips surrounding whitespace and replaces embedded
+NetworkManager timestamps and object pointers in recognized formats. Device names,
+paths, error codes, and other numbers remain distinct. This conservative approach
+can leave related variants in separate groups; it does not infer root causes.
+Known Wi-Fi patterns also get a failure family: missing `/usr/bin/iw` from udev,
+IWD “not a Wifi device,” and IWD `if_nametoindex` failures. A new exact signature
+matching a previously observed family is labelled **recurring failure — new variant**.
+Family counts and previously observed interface names appear alongside exact counts
+and original evidence. Interface names do not establish physical device identity.
+IWD object-path numbers may vary within the recognized family; error codes remain
+separate. Unknown message patterns are never grouped by replacing device names globally.
+With incomplete history, recurrence can be established but variant novelty is labelled
+**variant history incomplete**. Empty messages are excluded from comparison signatures
+and counted explicitly.
+
+A signature can be newly observed only with at least one baseline boot and no
+reported collection limitations in the target or selected baseline. Partial data
+can still prove recurrence, but cannot establish absence. If fewer boots are
+available than requested, labels apply only to the selected baseline and the
+command reports incomplete requested coverage. No older boots means insufficient
+history, not a new failure.
+
+Comparison uses all retained error-or-higher records for each selected boot.
+Observed spans are shown because boots can have different durations; counts are
+not rates or equal-duration comparisons. Log retention gaps may still exist.
+Only signatures found in the target are shown; resolved historical errors and
+package-change correlation are outside this milestone.
+
+Exit codes: `0` when all requested boots were collected without reported limitations,
+`1` for missing/incomplete coverage or collection failure, and `2` for invalid arguments.
 
 ## Structure
 

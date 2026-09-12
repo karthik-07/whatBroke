@@ -28,5 +28,5 @@ def render_errors(result: ErrorCollection, limit: int = 20) -> str:
         lines.append(f'\nLast {len(shown)} errors in journal order (UTC):')
         for event in shown:
             source = event.unit or event.identifier or event.transport or 'unknown source'
-            lines.append(_safe(f'  {event.timestamp.isoformat()}  [{event.priority}] {source}: {event.message}'))
+            lines.append(_safe(f'  {event.timestamp.isoformat()}  [{event.priority}] {source}: {event.message if event.message.strip() else '[empty message]'}'))
     return '\n'.join(lines)

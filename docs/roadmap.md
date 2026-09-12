@@ -24,10 +24,13 @@ are recorded in [CHANGELOG.md](../CHANGELOG.md).
 
 ## 2 — Boot comparison
 
-- [ ] Normalize variable fields without merging unrelated failures.
-- [ ] Compare a selected boot against configurable earlier boots.
-- [ ] Report newly observed signatures, counts, and history coverage.
-- [ ] Include explicit comparison windows and representative evidence.
+- [x] Add conservative source-aware normalization for NetworkManager timestamps/pointers.
+- [x] Distinguish new variants of three known Wi-Fi failure families from new failures.
+- [ ] Expand normalization using additional tested source formats.
+- [x] Compare a selected boot against configurable earlier boots.
+- [x] Report newly observed signatures, counts, and history coverage.
+- [x] Include observed full-boot ranges and representative evidence.
+- [ ] Add equal-duration or startup-only comparison windows.
 
 ## 3 — MVP report
 

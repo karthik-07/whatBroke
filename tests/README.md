@@ -14,3 +14,6 @@ They do not require systemd or journal access.
 
 Per-boot error tests cover selection, source fields, priorities, malformed records,
 empty-versus-unavailable logs, command failures, and inherited access restrictions.
+
+Comparison scenarios cover new/recurring signatures, normalization collisions,
+partial and missing baselines, per-boot counts, target selection, and CLI options.

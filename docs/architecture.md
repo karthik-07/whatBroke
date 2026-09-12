@@ -2,7 +2,7 @@
 
 The Pacman collector, package event/result models, Arch log-path resolver, and
 package report are implemented. System journal boot-history collection is also
-implemented, along with per-boot error-record collection. Analysis remains planned.
+implemented, along with per-boot error-record collection. Conservative signature comparison is implemented; package correlation remains planned.
 
 | Module | Responsibility |
 | --- | --- |
@@ -111,3 +111,36 @@ Unsupported field representations, including binary messages and repeated scalar
 fields, are counted as skipped records. No component inference, signature
 normalization, or cross-boot comparison is performed in this milestone. Journal
 field meanings follow the [systemd field reference](https://man.archlinux.org/man/systemd.journal-fields.7.en).
+
+## Implemented comparison
+
+`analysis/compare.py` provides pure signature/grouping and comparison functions,
+plus collection orchestration. The orchestration discovers boot history once,
+resolves the target, and collects the nearest earlier visible boots by journal
+index using exact IDs. Wall-clock timestamps do not determine boot order.
+
+A signature contains unit, identifier, transport, and normalized message. Only
+known NetworkManager timestamp/object-pointer patterns are substituted; original
+events remain untouched. Empty target messages are counted but not classified.
+A positive baseline match establishes recurrence even with partial data. Absence
+requires a nonempty baseline and available status for every selected collection;
+otherwise classification is insufficient history. Requested coverage shortfalls
+remain visible and produce a nonzero exit status.
+
+All retained records per boot are used. Reports expose unequal observed spans;
+equal-duration analysis, broader normalization, and package correlation remain
+future work. Reusing a discovery snapshot does not guarantee logs cannot rotate
+while subsequent queries run.
+
+## Failure-family context
+
+`analysis/families.py` recognizes three complete, source-specific Wi-Fi message
+patterns. Family keys retain the exact signature's source identity and preserve
+error codes. Only interface names and recognized IWD object-path numbers vary
+within these families. Exact signatures, counts, and original events are unchanged.
+Family counts are additional context, not counts to add to exact-signature totals.
+
+A positive baseline family match changes an otherwise unseen exact signature to
+recurring failure/new variant when coverage is available. With incomplete target
+or baseline collection, it reports recurring failure/variant history incomplete.
+Observed interface names are labels from logs, not physical hardware identities.

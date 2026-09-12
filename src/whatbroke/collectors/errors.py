@@ -6,6 +6,7 @@ import re
 import subprocess
 
 from whatbroke.collectors.journal import collect_boots, _timestamp
+from whatbroke.models.boots import BootCollection
 from whatbroke.models.errors import ErrorCollection, ErrorEvent
 from whatbroke.models.sources import SourceStatus
 
@@ -55,10 +56,11 @@ def parse_errors(output: str, result: ErrorCollection) -> None:
         result.status = SourceStatus.PARTIAL
 
 
-def collect_errors(selector: str = 'current') -> ErrorCollection:
+def collect_errors(selector: str = 'current', *, history: BootCollection | None = None) -> ErrorCollection:
     selector = boot_selector(selector)
     result = ErrorCollection(selector)
-    history = collect_boots()
+    if history is None:
+        history = collect_boots()
     result.status, result.access_limited = history.status, history.access_limited
     result.diagnostics = list(history.diagnostics)
     result.error = history.error
