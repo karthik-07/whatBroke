@@ -8,3 +8,7 @@ All records are synthetic.
   must continue through the final removal and report partial status.
 
 Other edge cases are generated in temporary files by the tests.
+
+- `correlation.log`: synthetic changes on January 1, 2026, before, at, inside,
+  and after a 01:00–02:00 UTC comparison window. Only the 01:30 linux upgrade
+  is a strictly preceding candidate inside that window.

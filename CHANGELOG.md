@@ -7,6 +7,12 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- Temporal package-change candidates for newly observed failures in `compare`,
+  with `--log-file`, baseline boot IDs, explicit windows, versions, and source lines.
+- Coverage reporting for missing/partial logs, unknown timezones, boundary ambiguity,
+  and inconsistent clocks; recurring family variants are not treated as new failures.
+- Synthetic correlation fixture and 12 regression tests (82 tests total).
+
 - Explicit Wi-Fi failure families for missing `iw`, IWD interface-type errors,
   and IWD interface-index failures, with family counts and interface-name evidence.
 - Eight family regression tests covering variants, partial history, and grouping
@@ -53,6 +59,9 @@ Completed changes are recorded here. Future work lives in the
 - Ignore rules for Python environments, caches, and build artifacts.
 
 ### Changed
+
+- Removed the skipped-correlation notice from `compare` output; package collection
+  still runs only for eligible newly observed failures.
 
 - New exact signatures in known recurring families now report “recurring failure —
   new variant” rather than implying an entirely new failure. Incomplete history

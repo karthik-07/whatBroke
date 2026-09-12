@@ -2,7 +2,7 @@
 
 The Pacman collector, package event/result models, Arch log-path resolver, and
 package report are implemented. System journal boot-history collection is also
-implemented, along with per-boot error-record collection. Conservative signature comparison is implemented; package correlation remains planned.
+implemented, along with per-boot error-record collection. Conservative signature comparison is implemented; temporal package correlation is implemented.
 
 | Module | Responsibility |
 | --- | --- |
@@ -144,3 +144,19 @@ A positive baseline family match changes an otherwise unseen exact signature to
 recurring failure/new variant when coverage is available. With incomplete target
 or baseline collection, it reports recurring failure/variant history incomplete.
 Observed interface names are labels from logs, not physical hardware identities.
+
+## Temporal package correlation
+
+`analysis/correlate.py` is a pure function over comparison and package collection
+results. It selects the nearest usable absence baseline by journal index and the
+minimum target timestamp for the exact signature. Strict interval bounds avoid
+claiming ordering for changes with identical timestamps. Candidates retain original
+package events and are sorted chronologically, without relevance scores.
+
+The CLI collects the package source once only when newly observed findings exist.
+It prints correlation separately so package source failures do not hide journal
+results; incomplete correlation still returns a nonzero overall exit status.
+Recurring families and insufficient baselines are excluded. No fallback onset is
+invented. Coverage limitations include partial reads, unverified tail coverage,
+unknown timezones, and inconsistent clocks. Earlier changes and delayed activation
+remain outside this temporal window and cannot be ruled out as causes.

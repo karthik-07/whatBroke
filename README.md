@@ -9,7 +9,8 @@ Linux failures and show the system changes that preceded them. The first target 
 **Status: early development.** Pacman package-history collection is implemented,
 including log availability, observed history ranges, and package changes. System
 journal boot-history, per-boot errors, and error-signature comparison are available.
-Package-change correlation is still planned.
+Temporal package-change correlation is available for newly observed failures.
+Component-aware relevance ranking and causal diagnosis are not implemented.
 
 ## How it will work
 
@@ -190,11 +191,44 @@ history, not a new failure.
 Comparison uses all retained error-or-higher records for each selected boot.
 Observed spans are shown because boots can have different durations; counts are
 not rates or equal-duration comparisons. Log retention gaps may still exist.
-Only signatures found in the target are shown; resolved historical errors and
-package-change correlation are outside this milestone.
+Only signatures found in the target are shown; resolved historical errors are
+outside this milestone. Newly observed failures also receive package-change candidates.
 
 Exit codes: `0` when all requested boots were collected without reported limitations,
 `1` for missing/incomplete coverage or collection failure, and `2` for invalid arguments.
+
+## Package-change candidates
+
+`whatbroke compare` now reads Pacman history when it finds newly observed failures.
+Override the package log with:
+
+```sh
+whatbroke compare --previous 15 --log-file /path/to/pacman.log
+```
+
+For each eligible signature, the window begins at the last observed record of the
+nearest earlier comparison boot without that signature and ends at the earliest
+matching target error. Only package events strictly inside the window are listed,
+with timestamps, actions, old/new versions, and source line references. Equal
+boundary timestamps do not establish ordering and are excluded with a notice.
+
+Candidates are **preceding changes, not proven causes or relevance rankings**.
+Installation time does not establish activation time. Changes earlier in the baseline
+boot can still matter later and are outside this bounded window. This does not find
+the first occurrence across all retained history or diagnose recurring failures.
+
+Recurring failures, including new variants of known families, do not trigger package
+correlation. If no eligible failures exist, package logs are not read and no
+correlation notice is printed. Without a usable absence baseline, no window is guessed.
+
+Missing/partial package logs, timezone-less events, timestamp-order conflicts, and
+history bounds that do not span the window are disclosed. A last log record before
+the failure may reflect inactivity; later coverage remains unverified. Rotated logs
+are not included, and apparent coverage does not guarantee no gaps. Valid candidates
+from partial data remain visible; no matches never proves no relevant changes occurred.
+
+Correlation limitations return exit code `1` even when journal comparison itself
+is available. The report displays correlation status separately from comparison status.
 
 ## Structure
 

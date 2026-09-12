@@ -3,6 +3,8 @@
 from whatbroke.collectors.errors import collect_errors, boot_selector
 from whatbroke.reporting.errors import render_errors
 
+from whatbroke.analysis.correlate import correlate
+from whatbroke.reporting.correlate import render_correlation
 from whatbroke.analysis.compare import collect_comparison
 from whatbroke.reporting.compare import render_comparison
 
@@ -29,7 +31,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="whatbroke",
         description="Inspect Linux package and boot history (early development).",
-        epilog="Package-change correlation and cause diagnosis are not implemented yet.",
+        epilog="Temporal package candidates are investigation leads, not proven causes.",
     )
     try:
         package_version = version("whatbroke")
@@ -54,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
                          help="target boot: current (default), index, or boot ID")
     compare.add_argument("--previous", type=positive_integer, default=5,
                          help="number of earlier visible boots to compare (default: 5)")
+    compare.add_argument("--log-file", type=Path, help="Pacman log for package-change correlation")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
@@ -61,7 +64,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "compare":
         result = collect_comparison(args.boot, args.previous)
         print(render_comparison(result))
-        return 0 if result.status == SourceStatus.AVAILABLE else 1
+        status = result.status
+        if any(f.classification == 'newly observed' for f in result.findings):
+            location = resolve_log_path() if args.log_file is None else None
+            packages = collect_pacman(args.log_file if args.log_file is not None else location.path)
+            if location and location.warning:
+                packages.warnings.append(location.warning)
+            correlation = correlate(result, packages)
+            print(render_correlation(correlation))
+            if correlation.status != SourceStatus.AVAILABLE:
+                status = SourceStatus.PARTIAL
+        return 0 if status == SourceStatus.AVAILABLE else 1
     if args.command == "errors":
         result = collect_errors(args.boot)
         print(render_errors(result, args.limit))

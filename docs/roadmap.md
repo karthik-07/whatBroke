@@ -34,9 +34,10 @@ are recorded in [CHANGELOG.md](../CHANGELOG.md).
 
 ## 3 — MVP report
 
-- [ ] Identify package changes between the last observed healthy boot and first
-  observed failing boot, with a bounded fallback when no healthy baseline exists.
-- [ ] Show candidate changes alongside failures.
+- [x] Identify package changes between the nearest usable absence baseline and
+  earliest target occurrence of a newly observed signature.
+- [ ] Search earlier history for first observed onset; define any fallback policy.
+- [x] Show temporal candidate changes alongside newly observed failures.
 - [ ] Provide commands to inspect source evidence.
 - [ ] Validate the complete workflow against reproducible regression scenarios.
 
