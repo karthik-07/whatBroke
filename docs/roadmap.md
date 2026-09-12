@@ -12,12 +12,14 @@ are recorded in [CHANGELOG.md](../CHANGELOG.md).
 ## 1 — Arch data collection
 
 - [x] Define package events, source statuses, and observed log-history ranges.
-- [ ] Define boot-history coverage models.
+- [x] Define boot-history records, observed ranges, and source availability.
 - [x] Parse Pacman package actions with old and new versions.
-- [ ] Read boot history and structured systemd journal records.
+- [x] Read available system journal boot history.
+- [ ] Read structured failure records within each boot.
 - [ ] Collect kernel, driver, and service failures.
 - [x] Test malformed Pacman records, missing files, and unreadable sources.
-- [ ] Test journal collection and missing boot history.
+- [x] Test boot-history collection, missing history, and access restrictions.
+- [ ] Test journal failure-record collection.
 
 ## 2 — Boot comparison
 

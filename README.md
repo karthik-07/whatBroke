@@ -7,8 +7,9 @@ Linux failures and show the system changes that preceded them. The first target 
 **Arch Linux with systemd and Pacman**.
 
 **Status: early development.** Pacman package-history collection is implemented,
-including log availability, observed history ranges, and package changes. Journal
-collection, boot comparison, and failure correlation are still planned.
+including log availability, observed history ranges, and package changes. System
+journal boot-history collection is also available. Failure collection, boot
+comparison, and correlation are still planned.
 
 ## How it will work
 
@@ -56,6 +57,7 @@ python -m pip install -e .
 whatbroke --help
 whatbroke --version
 whatbroke packages
+whatbroke boots
 ```
 
 `whatbroke packages` resolves the log path with `pacman-conf LogFile`, falling back
@@ -84,7 +86,7 @@ The report includes:
 History bounds do **not** guarantee continuous coverage. Legacy timestamps without
 an offset are retained and reported separately as local history with an unknown
 timezone. Unrecognized records are skipped and disclosed. Rotated/compressed logs
-and the system journal are not yet collected.
+are not yet collected by the package command. Use `boots` for journal boot history.
 
 The tool suggests sudo only for a permission-denied log read; missing files and
 empty logs do not trigger that suggestion. Configuration discovery failures get a
@@ -93,6 +95,30 @@ automatically. No command diagnoses failures yet.
 
 Exit codes: `0` for a readable file without malformed records (including empty
 files), `1` for partial collection or a source error, and `2` for invalid CLI arguments.
+
+## Boot history
+
+```sh
+whatbroke boots
+whatbroke boots --limit 5
+```
+
+Lists the last 20 visible system-journal boots by default. `--limit` changes display
+length; the total count and observed history still use all collected boots.
+Each boot includes its journal index, boot ID, and first/last retained entry times
+in UTC. These are not exact boot/shutdown times or proof of continuous coverage.
+Index `0` means the latest listed boot, which is not necessarily the current boot.
+
+The command queries the default system journal namespace using `journalctl` and
+includes retained rotated journals accessible to that command. It reports missing
+history, unavailable `journalctl`, malformed output, and command failures. Privilege
+hints and permission errors trigger a restricted-access notice and sudo guidance;
+other diagnostic messages are preserved and mark results incomplete. No escalation
+happens automatically. Readable records do not prove every journal file is accessible.
+
+Requires a `journalctl` version supporting JSON output for `--list-boots`. Unsupported
+output produces an explicit error. Exit codes are `0` for available boot history,
+`1` for missing/incomplete history or collection errors, and `2` for invalid arguments.
 
 ## Structure
 

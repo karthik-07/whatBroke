@@ -1,7 +1,8 @@
 # Architecture
 
 The Pacman collector, package event/result models, Arch log-path resolver, and
-package report are implemented. Journal collection and analysis remain planned.
+package report are implemented. System journal boot-history collection is also
+implemented; failure-record collection and analysis remain planned.
 
 | Module | Responsibility |
 | --- | --- |
@@ -74,3 +75,21 @@ explicit CLI path bypasses discovery. See the official
 
 The collector reads one plain-text log; rotated archives, transaction-completion
 validation, and package activation tracking remain outside this milestone.
+
+## Implemented boot-history collection
+
+`collectors/journal.py` invokes `journalctl --system --list-boots --no-pager --utc
+--output=json` with a stable C locale and a 30-second timeout. It preserves stderr
+rather than suppressing privilege hints. The parser validates JSON table records,
+retains exact microsecond timestamps, and skips invalid/duplicate rows explicitly.
+`models/boots.py` stores journal indices, IDs, and observed entry bounds.
+
+Permission diagnostics produce restricted-access status even on a successful exit.
+Other diagnostics mark the result partial; nonzero command exits remain errors.
+Missing readable boots do not imply a healthy system. Availability describes this
+query only, not guaranteed access to all files. No enumeration of individual
+missing journal files or other namespaces is performed.
+
+The default system journal query includes its accessible retained journal files.
+Its indices refer to listed history; no row is asserted to be the currently running
+boot. See the [journalctl manual](https://man.archlinux.org/man/journalctl.1.en).

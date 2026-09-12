@@ -2,16 +2,9 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import StrEnum
 from pathlib import Path
 
-
-class SourceStatus(StrEnum):
-    AVAILABLE = "available"
-    PARTIAL = "partial"
-    PERMISSION_DENIED = "permission_denied"
-    NOT_FOUND = "not_found"
-    ERROR = "error"
+from whatbroke.models.sources import SourceStatus
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,7 @@
 """Human-readable package collection reports."""
 
-from whatbroke.models.packages import PackageCollection, SourceStatus
+from whatbroke.models.packages import PackageCollection
+from whatbroke.models.sources import SourceStatus
 
 
 def _safe(value: object) -> str:

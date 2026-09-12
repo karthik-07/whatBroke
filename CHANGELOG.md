@@ -7,6 +7,14 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- `whatbroke boots` with configurable `--limit`, visible boot counts, boot IDs,
+  journal indices, and observed UTC history ranges.
+- System journal boot collector with missing-history, missing-command, timeout,
+  malformed-output, and access-restriction reporting; no automatic elevation.
+- Shared source statuses and structured boot-history models.
+- Synthetic boot-list fixture and 15 tests for parsing, collection failures,
+  access hints, CLI behavior, and reporting (33 tests total).
+
 - Pacman collector for installs, upgrades, downgrades, reinstalls, and removals,
   preserving versions, timestamps, and source-line evidence.
 - `whatbroke packages` with `--log-file` and `--limit`, configuration discovery
