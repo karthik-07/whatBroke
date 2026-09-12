@@ -7,6 +7,16 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- Pacman collector for installs, upgrades, downgrades, reinstalls, and removals,
+  preserving versions, timestamps, and source-line evidence.
+- `whatbroke packages` with `--log-file` and `--limit`, configuration discovery
+  through `pacman-conf`, and an explicit default-path fallback notice.
+- Observed history ranges, including separate bounds for legacy local timestamps.
+- Source availability and malformed-record reporting, with sudo guidance only for
+  permission-denied reads and nonzero exit codes for incomplete collection.
+- Synthetic Pacman fixtures and 18 portable tests covering parsing, history,
+  access failures, configuration discovery, and CLI behavior.
+
 - Python package scaffold with a `src` layout and `whatbroke` CLI entry point.
 - Help, development-status, and version output.
 - Namespaces for models, collectors, distro adapters, analysis, and reporting,

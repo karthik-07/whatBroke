@@ -6,8 +6,9 @@ What Broke? is a lightweight, local CLI project designed to identify newly obser
 Linux failures and show the system changes that preceded them. The first target is
 **Arch Linux with systemd and Pacman**.
 
-**Status: early development.** The package scaffold, informational CLI, and project
-documentation exist. Log collection, boot comparison, and correlation are planned.
+**Status: early development.** Pacman package-history collection is implemented,
+including log availability, observed history ranges, and package changes. Journal
+collection, boot comparison, and failure correlation are still planned.
 
 ## How it will work
 
@@ -44,7 +45,7 @@ from manually comparing thousands of log lines.
 - Shows evidence and missing history rather than claiming certainty.
 - Separates distro-specific integration from the comparison engine.
 
-## Try the scaffold
+## Try it
 
 Requires Python 3.11 or newer. No third-party runtime dependencies are declared.
 
@@ -54,14 +55,44 @@ source .venv/bin/activate
 python -m pip install -e .
 whatbroke --help
 whatbroke --version
+whatbroke packages
 ```
 
-Running `whatbroke` currently prints development status. It does not read logs or
-diagnose failures. To run directly from source without installing:
+`whatbroke packages` resolves the log path with `pacman-conf LogFile`, falling back
+with a notice to `/var/log/pacman.log` if configuration discovery fails. It reads
+one plain-text file and displays its last 20 package events in file order.
+
+You can also inspect a supplied file, including on a non-Arch development machine:
 
 ```sh
-PYTHONPATH=src python3 -m whatbroke --help
+whatbroke packages --log-file tests/fixtures/pacman/transactions.log --limit 5
 ```
+
+To run directly from source without installing:
+
+```sh
+PYTHONPATH=src python3 -m whatbroke packages --log-file tests/fixtures/pacman/transactions.log
+```
+
+The report includes:
+
+- Installs, upgrades, downgrades, reinstalls, and removals, with package versions.
+- Earliest and latest valid log timestamps, including non-package records.
+- Source status: available, partial, permission denied, not found, or read error.
+- Counts of ignored and malformed/unrecognized lines, with sample skipped line numbers.
+
+History bounds do **not** guarantee continuous coverage. Legacy timestamps without
+an offset are retained and reported separately as local history with an unknown
+timezone. Unrecognized records are skipped and disclosed. Rotated/compressed logs
+and the system journal are not yet collected.
+
+The tool suggests sudo only for a permission-denied log read; missing files and
+empty logs do not trigger that suggestion. Configuration discovery failures get a
+fallback notice and an explicit-path suggestion. No privileges are requested
+automatically. No command diagnoses failures yet.
+
+Exit codes: `0` for a readable file without malformed records (including empty
+files), `1` for partial collection or a source error, and `2` for invalid CLI arguments.
 
 ## Structure
 

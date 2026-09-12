@@ -11,11 +11,13 @@ are recorded in [CHANGELOG.md](../CHANGELOG.md).
 
 ## 1 — Arch data collection
 
-- [ ] Define normalized events and boot-history coverage models.
-- [ ] Parse Pacman transactions with old and new package versions.
+- [x] Define package events, source statuses, and observed log-history ranges.
+- [ ] Define boot-history coverage models.
+- [x] Parse Pacman package actions with old and new versions.
 - [ ] Read boot history and structured systemd journal records.
 - [ ] Collect kernel, driver, and service failures.
-- [ ] Test malformed records, missing history, and unreadable sources.
+- [x] Test malformed Pacman records, missing files, and unreadable sources.
+- [ ] Test journal collection and missing boot history.
 
 ## 2 — Boot comparison
 

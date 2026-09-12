@@ -1,7 +1,7 @@
 # Architecture
 
-This is the intended architecture. Only the package scaffold and informational
-CLI exist today; the other namespaces are placeholders.
+The Pacman collector, package event/result models, Arch log-path resolver, and
+package report are implemented. Journal collection and analysis remain planned.
 
 | Module | Responsibility |
 | --- | --- |
@@ -53,3 +53,24 @@ an absence of failures. Non-systemd collectors are outside the initial MVP.
 Prefer the Python standard library. Run on demand and read existing logs without
 persistent services or system modifications. Collectors should report permission
 failures explicitly and never escalate automatically.
+
+## Implemented package collection contract
+
+`models/packages.py` defines package events with timestamps, actions, versions,
+source paths, line numbers, and raw evidence. Collection results hold events,
+source status, observed history bounds, read/ignored/malformed counts, warnings,
+and any read error. A read failure preserves events already collected.
+
+Bounds include valid timestamps from non-package records. Offset-aware timestamps
+are compared chronologically; legacy local timestamps have separate bounds so
+unknown historical timezones are never guessed. A readable empty file is available
+but has no observed coverage. Malformed records produce a partial result.
+
+`distros/arch/pacman.py` uses `pacman-conf LogFile` to respect configuration Includes
+and defaults. If discovery fails, the default path is tried with a notice. An
+explicit CLI path bypasses discovery. See the official
+[pacman-conf manual](https://man.archlinux.org/man/pacman-conf.8.en) and
+[pacman configuration manual](https://man.archlinux.org/man/pacman.conf.5.en).
+
+The collector reads one plain-text log; rotated archives, transaction-completion
+validation, and package activation tracking remain outside this milestone.

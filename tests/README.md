@@ -1,8 +1,9 @@
 # Tests
 
-Reserved for behavior tests as functional features are implemented. Use Python's
-`unittest`, grouped by collector or analysis behavior.
+Run `PYTHONPATH=src python3 -m unittest discover -s tests -v` from the repository root.
 
-Prioritize recurring versus new failures, normalization collisions, missing boot
-history, timestamp handling, and multiple package changes together. Tests should
-run without root access or access to the developer's system logs.
+The Pacman tests cover package actions, original evidence, malformed records,
+encoding errors, chronological history bounds, legacy timestamps, empty/missing
+files, read failures, configuration discovery, and CLI behavior. Permission errors
+are simulated so tests work consistently without root or an Arch installation.
+No tests read the developer's system logs.

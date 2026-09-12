@@ -1,0 +1,6 @@
+[2026-02-01T08:00:00+0000] [ALPM] installed good (1-1)
+not a record
+[2026-99-01T08:00:00+0000] [ALPM] installed invalid-date (1-1)
+[2026-02-03T08:00:00+0000] [ALPM] upgraded broken (1-1)
+[2026-02-04T08:00:00+0000] [ALPM] installed broken ( )
+[2026-02-05T08:00:00+0000] [ALPM] removed good (1-1)

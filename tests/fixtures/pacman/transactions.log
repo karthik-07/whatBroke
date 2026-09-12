@@ -1,0 +1,9 @@
+[2026-02-01T08:00:00+0000] [PACMAN] Running 'pacman -Syu'
+[2026-02-01T08:01:00+0000] [ALPM] transaction started
+[2026-02-01T08:02:00+0000] [ALPM] installed example (1:1.0-1)
+[2026-02-02T08:00:00+0000] [ALPM] upgraded example (1:1.0-1 -> 1:2.0-1)
+[2026-02-03T08:00:00+0000] [ALPM] downgraded example (1:2.0-1 -> 1:1.0-1)
+[2026-02-04T08:00:00+0000] [ALPM] reinstalled example (1:1.0-1)
+[2026-02-05T08:00:00+0000] [ALPM] removed example (1:1.0-1)
+[2026-02-06T08:00:00+0000] [ALPM-SCRIPTLET] upgraded pretend (1 -> 2)
+[2026-02-07T08:00:00+0000] [ALPM] transaction completed
