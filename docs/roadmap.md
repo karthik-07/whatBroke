@@ -15,11 +15,12 @@ are recorded in [CHANGELOG.md](../CHANGELOG.md).
 - [x] Define boot-history records, observed ranges, and source availability.
 - [x] Parse Pacman package actions with old and new versions.
 - [x] Read available system journal boot history.
-- [ ] Read structured failure records within each boot.
-- [ ] Collect kernel, driver, and service failures.
+- [x] Read structured error-or-higher records within a selected boot.
+- [x] Collect error-level kernel and service messages, preserving driver text.
+- [ ] Identify failures logged at lower priorities and extract component identities.
 - [x] Test malformed Pacman records, missing files, and unreadable sources.
 - [x] Test boot-history collection, missing history, and access restrictions.
-- [ ] Test journal failure-record collection.
+- [x] Test journal error-record collection and empty-versus-unavailable results.
 
 ## 2 — Boot comparison
 

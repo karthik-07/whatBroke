@@ -2,7 +2,7 @@
 
 The Pacman collector, package event/result models, Arch log-path resolver, and
 package report are implemented. System journal boot-history collection is also
-implemented; failure-record collection and analysis remain planned.
+implemented, along with per-boot error-record collection. Analysis remains planned.
 
 | Module | Responsibility |
 | --- | --- |
@@ -93,3 +93,21 @@ missing journal files or other namespaces is performed.
 The default system journal query includes its accessible retained journal files.
 Its indices refer to listed history; no row is asserted to be the currently running
 boot. See the [journalctl manual](https://man.archlinux.org/man/journalctl.1.en).
+
+## Implemented per-boot errors
+
+`collectors/errors.py` resolves the selected boot against discovered history. For
+`current`, it reads `/proc/sys/kernel/random/boot_id`; it never substitutes the most
+recent recorded boot. It then queries that exact ID through `journalctl --system`
+with priorities `0..3`, JSON output, `--all`, no pager, and a 30-second timeout.
+
+`models/errors.py` retains structured events and source evidence. Error counts do
+not imply distinct failure signatures yet. Empty successful queries are meaningful
+only alongside readable boot history; discovery warnings and access restrictions
+remain part of the result. Historical coverage is a snapshot and logs can change
+between discovery and collection.
+
+Unsupported field representations, including binary messages and repeated scalar
+fields, are counted as skipped records. No component inference, signature
+normalization, or cross-boot comparison is performed in this milestone. Journal
+field meanings follow the [systemd field reference](https://man.archlinux.org/man/systemd.journal-fields.7.en).

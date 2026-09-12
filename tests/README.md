@@ -11,3 +11,6 @@ No tests read the developer's system logs.
 Boot-history tests use synthetic JSON and mocked command results to cover time
 ranges, malformed rows, missing history, privilege hints, and execution failures.
 They do not require systemd or journal access.
+
+Per-boot error tests cover selection, source fields, priorities, malformed records,
+empty-versus-unavailable logs, command failures, and inherited access restrictions.

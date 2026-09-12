@@ -1,5 +1,8 @@
 """Command-line entry point."""
 
+from whatbroke.collectors.errors import collect_errors, boot_selector
+from whatbroke.reporting.errors import render_errors
+
 import argparse
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -38,10 +41,19 @@ def main(argv: list[str] | None = None) -> int:
     boots = commands.add_parser("boots", help="inspect available system journal boot history")
     boots.add_argument("--limit", type=positive_integer, default=20,
                        help="number of final boots to display (default: 20)")
+    errors = commands.add_parser("errors", help="inspect error-or-higher records for one boot")
+    errors.add_argument("--boot", type=boot_selector, default="current",
+                        help="current (default), journal index, or 32-character boot ID")
+    errors.add_argument("--limit", type=positive_integer, default=20,
+                        help="number of final errors displayed (default: 20)")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
+    if args.command == "errors":
+        result = collect_errors(args.boot)
+        print(render_errors(result, args.limit))
+        return 0 if result.status == SourceStatus.AVAILABLE else 1
     if args.command == "boots":
         result = collect_boots()
         print(render_boots(result, args.limit))

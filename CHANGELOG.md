@@ -7,6 +7,13 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- `whatbroke errors` with current-boot, index, or boot-ID selection and `--limit`.
+- Structured error-or-higher system journal records with precise UTC timestamps,
+  messages, priorities, boot IDs, optional source fields, cursors, and original JSON.
+- Boot-history validation before error collection, distinguishing zero matching
+  errors from missing or restricted logs; malformed-record reporting.
+- Synthetic journal error fixture and 15 regression tests (48 tests total).
+
 - `whatbroke boots` with configurable `--limit`, visible boot counts, boot IDs,
   journal indices, and observed UTC history ranges.
 - System journal boot collector with missing-history, missing-command, timeout,

@@ -8,8 +8,8 @@ Linux failures and show the system changes that preceded them. The first target 
 
 **Status: early development.** Pacman package-history collection is implemented,
 including log availability, observed history ranges, and package changes. System
-journal boot-history collection is also available. Failure collection, boot
-comparison, and correlation are still planned.
+journal boot-history and per-boot error collection are also available. Boot
+comparison and correlation are still planned.
 
 ## How it will work
 
@@ -58,6 +58,7 @@ whatbroke --help
 whatbroke --version
 whatbroke packages
 whatbroke boots
+whatbroke errors
 ```
 
 `whatbroke packages` resolves the log path with `pacman-conf LogFile`, falling back
@@ -91,7 +92,7 @@ are not yet collected by the package command. Use `boots` for journal boot histo
 The tool suggests sudo only for a permission-denied log read; missing files and
 empty logs do not trigger that suggestion. Configuration discovery failures get a
 fallback notice and an explicit-path suggestion. No privileges are requested
-automatically. No command diagnoses failures yet.
+automatically. These commands collect evidence; no command diagnoses causes yet.
 
 Exit codes: `0` for a readable file without malformed records (including empty
 files), `1` for partial collection or a source error, and `2` for invalid CLI arguments.
@@ -119,6 +120,37 @@ happens automatically. Readable records do not prove every journal file is acces
 Requires a `journalctl` version supporting JSON output for `--list-boots`. Unsupported
 output produces an explicit error. Exit codes are `0` for available boot history,
 `1` for missing/incomplete history or collection errors, and `2` for invalid arguments.
+
+## Errors within a boot
+
+```sh
+whatbroke errors                         # Current running boot
+whatbroke errors --boot -1               # Previous recorded boot
+whatbroke errors --boot 0 --limit 50     # Latest recorded boot, show 50 errors
+```
+
+`--boot` accepts `current` (the default), a journal index, or a 32-character boot ID
+from `whatbroke boots`. Positive offsets count from the oldest visible boot starting
+at 1. Current-boot selection reads the kernel boot ID rather than assuming the
+latest retained boot is current. The selected ID is resolved against visible boot
+history before querying errors.
+
+The collector reads system-journal priorities **0–3** (emergency through error).
+It retains timestamps, messages, boot IDs, and service/source identifiers when
+available. The default display limit is 20; changing it does not change the collected
+count. Warnings, separate user journals, and other journal namespaces are excluded.
+Driver names embedded in messages are preserved, but not yet extracted or correlated.
+
+No matching errors in a visible boot is reported separately from unavailable
+history or restricted access. Boot-history ranges describe retained records at
+lookup time, not continuous coverage or exact uptime. Logs may change during a query.
+Malformed records, binary messages, and ambiguous repeated fields are skipped and
+counted explicitly. Original JSON is retained for accepted records, including cursors
+when present; output escapes terminal control characters.
+
+Exit codes are `0` for available collection (including zero matching errors), `1`
+for incomplete or unavailable collection, and `2` for invalid arguments. As with
+`boots`, sudo is suggested only when journal diagnostics indicate restricted access.
 
 ## Structure
 
