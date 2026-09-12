@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from whatbroke.models.boots import Boot
+from whatbroke.models.boots import Boot, BootCollection
 from whatbroke.models.sources import SourceStatus
 
 
@@ -29,3 +29,4 @@ class ErrorCollection:
     diagnostics: list[str] = field(default_factory=list)
     access_limited: bool = False
     error: str | None = None
+    history: BootCollection | None = None

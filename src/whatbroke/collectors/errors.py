@@ -61,6 +61,7 @@ def collect_errors(selector: str = 'current', *, history: BootCollection | None 
     result = ErrorCollection(selector)
     if history is None:
         history = collect_boots()
+    result.history = history
     result.status, result.access_limited = history.status, history.access_limited
     result.diagnostics = list(history.diagnostics)
     result.error = history.error

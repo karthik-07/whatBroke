@@ -7,6 +7,11 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- Explicit visible-history limits in `boots`, `errors`, and `compare`, including
+  the earliest discovered record and an explanation of the boot display limit.
+- Regression coverage for display limits and missing boot selections retaining
+  discovery bounds (85 tests total).
+
 - Temporal package-change candidates for newly observed failures in `compare`,
   with `--log-file`, baseline boot IDs, explicit windows, versions, and source lines.
 - Coverage reporting for missing/partial logs, unknown timezones, boundary ambiguity,

@@ -2,6 +2,7 @@
 from whatbroke.analysis.compare import Comparison
 from whatbroke.models.sources import SourceStatus
 from whatbroke.reporting.packages import _safe
+from whatbroke.reporting.history import history_limits
 
 
 def render_comparison(result: Comparison) -> str:
@@ -9,6 +10,8 @@ def render_comparison(result: Comparison) -> str:
     lines = [f'Status: {result.status.value}',
              f'Previous boots: requested {result.requested}; selected {len(result.previous)}; '
              f'collected without reported limitations {complete_count}']
+    if result.target.history is not None:
+        lines.extend(history_limits(result.target.history))
     for label, item in [('Target', result.target), *[(f'Previous {i+1}', item) for i, item in enumerate(result.previous)]]:
         lines.append(f'{label}: {item.boot.boot_id if item.boot else item.selector} · {item.status.value}')
         if item.boot:

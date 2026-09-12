@@ -2,6 +2,7 @@
 from whatbroke.models.errors import ErrorCollection
 from whatbroke.models.sources import SourceStatus
 from whatbroke.reporting.packages import _safe
+from whatbroke.reporting.history import history_limits
 
 
 def render_errors(result: ErrorCollection, limit: int = 20) -> str:
@@ -10,6 +11,8 @@ def render_errors(result: ErrorCollection, limit: int = 20) -> str:
     if result.boot:
         lines.extend([f'Boot ID: {result.boot.boot_id}',
                       f'Observed boot history: {result.boot.first_entry.isoformat()} – {result.boot.last_entry.isoformat()}'])
+    if result.history is not None:
+        lines.extend(history_limits(result.history))
     lines.append(f'Error-or-higher records: {len(result.events)}')
     if result.error:
         lines.append(_safe(result.error))

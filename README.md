@@ -100,6 +100,12 @@ files), `1` for partial collection or a source error, and `2` for invalid CLI ar
 
 ## Boot history
 
+`boots`, `errors`, and `compare` explicitly show the number of visible boots and
+the earliest record returned by boot discovery. Earlier history is unavailable
+to that query; the tool does not assume it was deleted or determine the cause.
+Increasing `boots --limit` only displays more available boots and cannot retrieve
+older history. Missing records are not evidence that an earlier boot was healthy.
+
 ```sh
 whatbroke boots
 whatbroke boots --limit 5

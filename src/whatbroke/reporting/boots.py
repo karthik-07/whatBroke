@@ -2,6 +2,7 @@
 
 from whatbroke.models.boots import BootCollection
 from whatbroke.reporting.packages import _safe
+from whatbroke.reporting.history import history_limits
 
 
 def render_boots(result: BootCollection, limit: int = 20) -> str:
@@ -13,6 +14,8 @@ def render_boots(result: BootCollection, limit: int = 20) -> str:
         lines.append(f"Observed history: {first.isoformat()} – {last.isoformat()}")
     else:
         lines.append("Observed history: unavailable.")
+    lines.extend(history_limits(result))
+    lines.append(f"Display limit: {limit}. Increasing --limit only displays more available boots; it cannot retrieve older history.")
     if result.error:
         lines.append(_safe(result.error))
     if result.malformed_records:
@@ -22,7 +25,7 @@ def render_boots(result: BootCollection, limit: int = 20) -> str:
                      "Rerun with sudo for more details.")
     lines.extend(f"journalctl: {_safe(line)}" for line in result.diagnostics)
     lines.append("Times describe retained journal entries, not exact boot/shutdown times. "
-                 "Coverage may have gaps; missing history cannot be recovered by changing permissions.")
+                 "Coverage may have gaps; unavailable records are not evidence of error-free boots.")
     lines.append("Availability describes readable records, not guaranteed access to every journal file.")
     if result.boots:
         shown = result.boots[-limit:]
