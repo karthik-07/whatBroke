@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whatbroke"
+version = "0.1.0.dev0"
+description = "Investigate newly observed Linux failures and preceding system changes"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+
+[project.scripts]
+whatbroke = "whatbroke.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
