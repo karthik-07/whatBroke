@@ -3,11 +3,11 @@
 **What changed before your Linux system started breaking?**
 
 Compare errors across Linux boots and see which package changes preceded a newly
-observed failure. Start with **Arch Linux, systemd, and Pacman**.
+observed failure. Right now it is only tested against **Arch Linux**.
 
 **Early development:** package history, boot history, error comparison, and
 temporal package correlation work today. Automatic onset tracing and
-component-aware relevance ranking are still planned.
+component-aware relevance ranking are still planned. 
 
 Runs locally, on demand, with no cloud, AI, daemon, kernel module, or eBPF.
 Your logs and system packages are never modified.
