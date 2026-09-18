@@ -9,8 +9,7 @@ observed failure. Right now it is only tested against **Arch Linux**.
 temporal package correlation work today. Automatic onset tracing and
 component-aware relevance ranking are still planned. 
 
-Runs locally, on demand, with no cloud, AI, daemon, kernel module, or eBPF.
-Your logs and system packages are never modified.
+Runs locally and only when you ask: no cloud, no AI, no background daemon, no kernel module, no eBPF. It reads your logs and package history read-only and never modifies them.
 
 ## Get started
 
