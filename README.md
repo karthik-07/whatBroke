@@ -54,29 +54,20 @@ The current running boot may differ from the latest recorded boot.
 
 ### Use a saved package log
 
-Your configured Pacman log is used automatically, with a disclosed fallback to
-`/var/log/pacman.log`. To choose a file explicitly:
+Your configured Pacman log is used automatically, resolved through `pacman-conf`
+with a disclosed fallback to `/var/log/pacman.log`. Pass `--log-file` to use a
+saved or rotated log from the affected machine:
 
 ```sh
-whatbroke packages --log-file /var/log/pacman.log
-whatbroke compare --log-file /var/log/pacman.log
-```
-
-Replace `/var/log/pacman.log` with your saved copy's path when needed.
-
-You can try a synthetic fixture without Arch or an installation:
-
-```sh
-PYTHONPATH=src python3 -m whatbroke packages --log-file tests/fixtures/pacman/transactions.log
+whatbroke packages --log-file /path/to/pacman.log
+whatbroke compare  --log-file /path/to/pacman.log
 ```
 
 ## Read the results
 
-Package reports show installs, upgrades, downgrades, reinstalls, and removals,
-including versions and observed log dates.
-
+Package reports cover installs, upgrades, downgrades, reinstalls, and removals.
 Boot and error reports show available history, boot IDs, timestamps, and access
-limitations. Error collection includes system-journal priorities 0–3
+limitations; error collection includes system-journal priorities 0–3
 (emergency through error).
 
 Comparison shows one overall status, then groups related messages once and
@@ -86,9 +77,9 @@ evidence. Both modes collect the same data and return the same exit code.
 
 | Result | Meaning |
 | --- | --- |
-| Newly observed | No matching signature in the selected baseline, with no reported collection limitations. |
+| Newly observed | No matching signature in the selected baseline, and every selected baseline boot was fully available. A shortfall in requested boots is still reported as partial coverage. |
 | Recurring | A matching signature appeared in an earlier comparison boot. |
-| Recurring failure — new variant | A new exact signature belongs to a known recurring failure family. |
+| Recurring failure - new variant | A new exact signature belongs to a known recurring failure family. |
 | Insufficient history | Available evidence cannot establish whether the signature is new. |
 
 With incomplete history, a recurring family's variant may instead be labelled
@@ -158,6 +149,11 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
 Tests use synthetic records and mocked failures; you do not need root or systemd.
+Try it without Arch or an installation:
+
+```sh
+PYTHONPATH=src python3 -m whatbroke packages --log-file tests/fixtures/pacman/transactions.log
+```
 
 ```text
 src/whatbroke/
