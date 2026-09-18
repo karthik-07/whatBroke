@@ -2,255 +2,172 @@
 
 **What changed before your Linux system started breaking?**
 
-What Broke? is a lightweight, local CLI project designed to identify newly observed
-Linux failures and show the system changes that preceded them. The first target is
-**Arch Linux with systemd and Pacman**.
+Compare errors across Linux boots and see which package changes preceded a newly
+observed failure. Start with **Arch Linux, systemd, and Pacman**.
 
-**Status: early development.** Pacman package-history collection is implemented,
-including log availability, observed history ranges, and package changes. System
-journal boot-history, per-boot errors, and error-signature comparison are available.
-Temporal package-change correlation is available for newly observed failures.
-Component-aware relevance ranking and causal diagnosis are not implemented.
+**Early development:** package history, boot history, error comparison, and
+temporal package correlation work today. Automatic onset tracing and
+component-aware relevance ranking are still planned.
 
-## How it will work
+Runs locally, on demand, with no cloud, AI, daemon, kernel module, or eBPF.
+Your logs and system packages are never modified.
 
-```text
-Linux logs + package history → normalized events → compare boots
-                            → detect new failures → show preceding changes
-```
+## Get started
 
-Illustrative output — not current functionality:
+You need Python 3.11+ and, for boot analysis, `journalctl` with JSON support for
+`--list-boots`. There are no third-party Python runtime dependencies; installation
+may download build dependencies.
 
-```text
-NEWLY OBSERVED ERROR
-mt7921e: Timeout for driver own
-
-Current boot: 17 occurrences
-Previous 15 boots with available logs: 0 occurrences
-
-Recent changes before the first observed failure:
-  linux-firmware upgraded
-  linux upgraded
-  NetworkManager upgraded
-
-These changes are investigation candidates, not proven causes.
-```
-
-The goal is to explain **what is new and what changed before it**, saving users
-from manually comparing thousands of log lines.
-
-## Principles
-
-- CLI only, local only, no cloud or AI dependency.
-- Runs on demand: no daemon, kernel module, or eBPF.
-- Reads existing logs with minimal permissions; never modifies system packages.
-- Shows evidence and missing history rather than claiming certainty.
-- Separates distro-specific integration from the comparison engine.
-
-## Try it
-
-Requires Python 3.11 or newer. No third-party runtime dependencies are declared.
+From the repository root:
 
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
-whatbroke --help
-whatbroke --version
-whatbroke packages
-whatbroke boots
-whatbroke errors
+whatbroke compare
 ```
 
-`whatbroke packages` resolves the log path with `pacman-conf LogFile`, falling back
-with a notice to `/var/log/pacman.log` if configuration discovery fails. It reads
-one plain-text file and displays its last 20 package events in file order.
+Use `whatbroke --help` or a command's help, such as `whatbroke compare --help`,
+for options.
 
-You can also inspect a supplied file, including on a non-Arch development machine:
+## Commands
 
 ```sh
-whatbroke packages --log-file tests/fixtures/pacman/transactions.log --limit 5
+whatbroke packages                      # Recent package changes
+whatbroke packages --limit 50
+whatbroke boots                         # Available boot history
+whatbroke boots --limit 50
+whatbroke errors                        # Current boot's errors
+whatbroke errors --boot -1 --limit 50
+whatbroke compare                       # Current boot vs 5 earlier boots
+whatbroke compare --previous 15
+whatbroke compare --boot -1 --previous 5
 ```
 
-To run directly from source without installing:
+`packages`, `boots`, and `errors` display up to 20 records by default.
+`--limit` changes the display count, not how much available history is read.
+
+For `errors` and `compare`, choose a boot with `--boot current`, a journal index,
+or a boot ID from `whatbroke boots`. Index `0` is the latest recorded boot,
+`-1` the one before it; positive offsets start at `1` for the oldest visible boot.
+The current running boot may differ from the latest recorded boot.
+
+### Use a saved package log
+
+Your configured Pacman log is used automatically, with a disclosed fallback to
+`/var/log/pacman.log`. To choose a file explicitly:
+
+```sh
+whatbroke packages --log-file /var/log/pacman.log
+whatbroke compare --log-file /var/log/pacman.log
+```
+
+Replace `/var/log/pacman.log` with your saved copy's path when needed.
+
+You can try a synthetic fixture without Arch or an installation:
 
 ```sh
 PYTHONPATH=src python3 -m whatbroke packages --log-file tests/fixtures/pacman/transactions.log
 ```
 
-The report includes:
+## Read the results
 
-- Installs, upgrades, downgrades, reinstalls, and removals, with package versions.
-- Earliest and latest valid log timestamps, including non-package records.
-- Source status: available, partial, permission denied, not found, or read error.
-- Counts of ignored and malformed/unrecognized lines, with sample skipped line numbers.
+Package reports show installs, upgrades, downgrades, reinstalls, and removals,
+including versions and observed log dates.
 
-History bounds do **not** guarantee continuous coverage. Legacy timestamps without
-an offset are retained and reported separately as local history with an unknown
-timezone. Unrecognized records are skipped and disclosed. Rotated/compressed logs
-are not yet collected by the package command. Use `boots` for journal boot history.
+Boot and error reports show available history, boot IDs, timestamps, and access
+limitations. Error collection includes system-journal priorities 0–3
+(emergency through error).
 
-The tool suggests sudo only for a permission-denied log read; missing files and
-empty logs do not trigger that suggestion. Configuration discovery failures get a
-fallback notice and an explicit-path suggestion. No privileges are requested
-automatically. These commands collect evidence; no command diagnoses causes yet.
+Comparison groups messages by source and signature, preserving original evidence
+and per-boot counts:
 
-Exit codes: `0` for a readable file without malformed records (including empty
-files), `1` for partial collection or a source error, and `2` for invalid CLI arguments.
+| Result | Meaning |
+| --- | --- |
+| Newly observed | No matching signature in the selected baseline, with no reported collection limitations. |
+| Recurring | A matching signature appeared in an earlier comparison boot. |
+| Recurring failure — new variant | A new exact signature belongs to a known recurring failure family. |
+| Insufficient history | Available evidence cannot establish whether the signature is new. |
 
-## Boot history
+With incomplete history, a recurring family's variant may instead be labelled
+“variant history incomplete.”
 
-`boots`, `errors`, and `compare` explicitly show the number of visible boots and
-the earliest record returned by boot discovery. Earlier history is unavailable
-to that query; the tool does not assume it was deleted or determine the cause.
-Increasing `boots --limit` only displays more available boots and cannot retrieve
-older history. Missing records are not evidence that an earlier boot was healthy.
+Normalization handles known NetworkManager timestamp and pointer formats.
+Three narrow Wi-Fi rules group missing-`iw`, IWD interface-type, and IWD
+interface-index messages for `wlanN` names. Other device names, paths, and
+error codes remain distinct; this is not comprehensive Wi-Fi detection.
 
-```sh
-whatbroke boots
-whatbroke boots --limit 5
-```
+### Investigate preceding changes
 
-Lists the last 20 visible system-journal boots by default. `--limit` changes display
-length; the total count and observed history still use all collected boots.
-Each boot includes its journal index, boot ID, and first/last retained entry times
-in UTC. These are not exact boot/shutdown times or proof of continuous coverage.
-Index `0` means the latest listed boot, which is not necessarily the current boot.
+For newly observed failures, comparison lists package changes strictly between:
 
-The command queries the default system journal namespace using `journalctl` and
-includes retained rotated journals accessible to that command. It reports missing
-history, unavailable `journalctl`, malformed output, and command failures. Privilege
-hints and permission errors trigger a restricted-access notice and sudo guidance;
-other diagnostic messages are preserved and mark results incomplete. No escalation
-happens automatically. Readable records do not prove every journal file is accessible.
+1. The last observed record of the nearest earlier comparison boot without the signature.
+2. The earliest matching error in the selected boot.
 
-Requires a `journalctl` version supporting JSON output for `--list-boots`. Unsupported
-output produces an explicit error. Exit codes are `0` for available boot history,
-`1` for missing/incomplete history or collection errors, and `2` for invalid arguments.
+You get timestamps, actions, versions, source lines, and any coverage limitations.
+These changes are investigation candidates, not proven causes or relevance rankings.
 
-## Errors within a boot
+Recurring failures and new variants do not trigger package correlation.
+The tool does not yet trace them backward to their first appearance.
 
-```sh
-whatbroke errors                         # Current running boot
-whatbroke errors --boot -1               # Previous recorded boot
-whatbroke errors --boot 0 --limit 50     # Latest recorded boot, show 50 errors
-```
+## Understand the limits
 
-`--boot` accepts `current` (the default), a journal index, or a 32-character boot ID
-from `whatbroke boots`. Positive offsets count from the oldest visible boot starting
-at 1. Current-boot selection reads the kernel boot ID rather than assuming the
-latest retained boot is current. The selected ID is resolved against visible boot
-history before querying errors.
+- **History:** you can inspect only readable, retained records. Reports show the
+  available range. Increasing `--limit` cannot recover older logs, and missing
+  records do not establish that an earlier boot was healthy.
+- **Permissions:** restricted journal access or a denied package-log read prompts
+  sudo guidance. Privileges are never requested automatically. Readable records
+  do not guarantee access to every journal file.
+- **Coverage:** boot timestamps describe retained entries, not exact uptime.
+  Comparisons use full available boot records with potentially different durations;
+  counts are not rates.
+- **Sources:** journal queries include accessible rotated system journals in the
+  default namespace. Warnings, separate user journals, and other namespaces are
+  excluded. Package collection reads one plain-text log, without archive discovery.
+- **Parsing:** skipped malformed or unsupported records are disclosed. Empty error
+  messages are excluded from comparison. Legacy package timestamps without a
+  timezone are shown separately and excluded from correlation.
+- **Timing:** package installation does not establish activation time. Changes
+  outside the correlation window may still matter. Equal boundary timestamps,
+  inconsistent clocks, and unverified package-history coverage are disclosed.
+- **Scope:** comparison investigates errors present in the selected boot. It does
+  not search all history for past incidents or recover deleted records.
 
-The collector reads system-journal priorities **0–3** (emergency through error).
-It retains timestamps, messages, boot IDs, and service/source identifiers when
-available. The default display limit is 20; changing it does not change the collected
-count. Warnings, separate user journals, and other journal namespaces are excluded.
-Driver names embedded in messages are preserved, but not yet extracted or correlated.
+Exit codes: `0` for available results, `1` for incomplete coverage or
+collection/correlation errors, and `2` for invalid arguments. Package-log fallback
+and legacy-timezone notices alone do not change the package command's exit code.
+An empty readable package log or zero matching errors can return `0`; neither
+proves system health. Requesting more comparison boots than are available returns `1`.
+Comparison can also return `1` when journal results are available but package-log
+coverage is unverified; check the separate correlation status and limitations.
 
-No matching errors in a visible boot is reported separately from unavailable
-history or restricted access. Boot-history ranges describe retained records at
-lookup time, not continuous coverage or exact uptime. Logs may change during a query.
-Malformed records, binary messages, and ambiguous repeated fields are skipped and
-counted explicitly. Original JSON is retained for accepted records, including cursors
-when present; output escapes terminal control characters.
+## Contributions
 
-Exit codes are `0` for available collection (including zero matching errors), `1`
-for incomplete or unavailable collection, and `2` for invalid arguments. As with
-`boots`, sudo is suggested only when journal diagnostics indicate restricted access.
+I'm building What Broke? as a personal learning project, so I'm keeping development
+solo for now and won't be accepting pull requests. Bug reports and feedback are
+welcome. Thanks for taking a look!
 
-## Compare boots
+## Development
 
 ```sh
-whatbroke compare                         # Current boot vs up to 5 earlier boots
-whatbroke compare --previous 15
-whatbroke compare --boot -1 --previous 5  # An earlier target and its predecessors
+PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
-Groups target errors by service/source and normalized message, then reports each
-signature as **newly observed**, **recurring**, or **insufficient history**. Reports
-include target counts, individual baseline-boot counts, original example messages,
-boot IDs, observed time ranges, and requested/selected/usable boot counts.
-
-Normalization currently strips surrounding whitespace and replaces embedded
-NetworkManager timestamps and object pointers in recognized formats. Device names,
-paths, error codes, and other numbers remain distinct. This conservative approach
-can leave related variants in separate groups; it does not infer root causes.
-Known Wi-Fi patterns also get a failure family: missing `/usr/bin/iw` from udev,
-IWD “not a Wifi device,” and IWD `if_nametoindex` failures. A new exact signature
-matching a previously observed family is labelled **recurring failure — new variant**.
-Family counts and previously observed interface names appear alongside exact counts
-and original evidence. Interface names do not establish physical device identity.
-IWD object-path numbers may vary within the recognized family; error codes remain
-separate. Unknown message patterns are never grouped by replacing device names globally.
-With incomplete history, recurrence can be established but variant novelty is labelled
-**variant history incomplete**. Empty messages are excluded from comparison signatures
-and counted explicitly.
-
-A signature can be newly observed only with at least one baseline boot and no
-reported collection limitations in the target or selected baseline. Partial data
-can still prove recurrence, but cannot establish absence. If fewer boots are
-available than requested, labels apply only to the selected baseline and the
-command reports incomplete requested coverage. No older boots means insufficient
-history, not a new failure.
-
-Comparison uses all retained error-or-higher records for each selected boot.
-Observed spans are shown because boots can have different durations; counts are
-not rates or equal-duration comparisons. Log retention gaps may still exist.
-Only signatures found in the target are shown; resolved historical errors are
-outside this milestone. Newly observed failures also receive package-change candidates.
-
-Exit codes: `0` when all requested boots were collected without reported limitations,
-`1` for missing/incomplete coverage or collection failure, and `2` for invalid arguments.
-
-## Package-change candidates
-
-`whatbroke compare` now reads Pacman history when it finds newly observed failures.
-Override the package log with:
-
-```sh
-whatbroke compare --previous 15 --log-file /path/to/pacman.log
-```
-
-For each eligible signature, the window begins at the last observed record of the
-nearest earlier comparison boot without that signature and ends at the earliest
-matching target error. Only package events strictly inside the window are listed,
-with timestamps, actions, old/new versions, and source line references. Equal
-boundary timestamps do not establish ordering and are excluded with a notice.
-
-Candidates are **preceding changes, not proven causes or relevance rankings**.
-Installation time does not establish activation time. Changes earlier in the baseline
-boot can still matter later and are outside this bounded window. This does not find
-the first occurrence across all retained history or diagnose recurring failures.
-
-Recurring failures, including new variants of known families, do not trigger package
-correlation. If no eligible failures exist, package logs are not read and no
-correlation notice is printed. Without a usable absence baseline, no window is guessed.
-
-Missing/partial package logs, timezone-less events, timestamp-order conflicts, and
-history bounds that do not span the window are disclosed. A last log record before
-the failure may reflect inactivity; later coverage remains unverified. Rotated logs
-are not included, and apparent coverage does not guarantee no gaps. Valid candidates
-from partial data remain visible; no matches never proves no relevant changes occurred.
-
-Correlation limitations return exit code `1` even when journal comparison itself
-is available. The report displays correlation status separately from comparison status.
-
-## Structure
+Tests use synthetic records and mocked failures; you do not need root or systemd.
 
 ```text
 src/whatbroke/
-├── cli.py          # CLI entry point
-├── models/         # Shared event and result contracts
-├── collectors/     # Log and package-history readers
-├── distros/        # Distribution-specific integration
-│   └── arch/       # Initial Arch Linux namespace
-├── analysis/       # Normalization, boot comparison, correlation
-└── reporting/      # CLI output
-tests/fixtures/     # Sanitized log scenarios
+├── cli.py          # Commands
+├── models/         # Events and results
+├── collectors/     # Log readers
+├── distros/arch/   # Pacman configuration
+├── analysis/       # Signatures, comparison, correlation
+└── reporting/      # Terminal output
+tests/fixtures/     # Synthetic log scenarios
 docs/               # Architecture and roadmap
 ```
 
-See the [architecture](docs/architecture.md) for the extension approach,
-[roadmap](docs/roadmap.md) for upcoming milestones, and [changelog](CHANGELOG.md)
-for completed work. Development guidance is in [CONTRIBUTING.md](CONTRIBUTING.md).
+See [architecture](docs/architecture.md) for module boundaries,
+[roadmap](docs/roadmap.md) for planned work,
+[changelog](CHANGELOG.md) for progress, and
+[contribution policy](CONTRIBUTING.md) for feedback and development notes.

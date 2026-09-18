@@ -5,6 +5,22 @@ Completed changes are recorded here. Future work lives in the
 
 ## [Unreleased]
 
+### Documentation
+
+- Condensed architecture and roadmap documentation and removed stale claims about
+  automatic distro detection and unimplemented package correlation.
+- Verified README command examples against local logs and editable installation;
+  clarified comparison exit code 1 for unverified package-history coverage.
+
+- Added a friendly solo-development policy: pull requests are not accepted for
+  now; bug reports and feedback are welcome.
+- Rechecked README behavior claims and clarified package-command exit-code notices.
+
+- Condensed the README into direct setup, command, result, and limitation guidance.
+
+- Audited the README against the implementation; clarified current functionality,
+  setup requirements, Wi-Fi rule coverage, in-memory evidence, and exit codes.
+
 ### Added
 
 - Explicit visible-history limits in `boots`, `errors`, and `compare`, including

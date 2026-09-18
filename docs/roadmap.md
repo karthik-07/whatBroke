@@ -1,52 +1,37 @@
 # Roadmap
 
-Milestones describe intended scope, not release commitments. Completed changes
-are recorded in [CHANGELOG.md](../CHANGELOG.md).
+Completed work is checked below. Unchecked items are plans, not release commitments.
+See the [changelog](../CHANGELOG.md) for progress.
 
-## 0 — Foundation
+## Available now
 
-- [x] Establish a Python package and informational CLI.
-- [x] Separate collectors, distro integration, models, analysis, and reporting.
-- [x] Document scope, architecture, and contribution workflow.
+- [x] Local Python CLI with package, boot, error, and comparison commands.
+- [x] Pacman actions, versions, timestamps, and source evidence.
+- [x] System journal boot history and per-boot error-or-higher records.
+- [x] Visible history ranges, access limitations, and malformed-record reporting.
+- [x] Configurable boot comparison with exact signatures and per-boot counts.
+- [x] NetworkManager timestamp/pointer normalization and three Wi-Fi family rules.
+- [x] Temporal package candidates for newly observed failures.
+- [x] Synthetic tests for collection, comparison, correlation, and missing data.
 
-## 1 — Arch data collection
+## Next
 
-- [x] Define package events, source statuses, and observed log-history ranges.
-- [x] Define boot-history records, observed ranges, and source availability.
-- [x] Parse Pacman package actions with old and new versions.
-- [x] Read available system journal boot history.
-- [x] Read structured error-or-higher records within a selected boot.
-- [x] Collect error-level kernel and service messages, preserving driver text.
-- [ ] Identify failures logged at lower priorities and extract component identities.
-- [x] Test malformed Pacman records, missing files, and unreadable sources.
-- [x] Test boot-history collection, missing history, and access restrictions.
-- [x] Test journal error-record collection and empty-versus-unavailable results.
-
-## 2 — Boot comparison
-
-- [x] Add conservative source-aware normalization for NetworkManager timestamps/pointers.
-- [x] Distinguish new variants of three known Wi-Fi failure families from new failures.
-- [ ] Expand normalization using additional tested source formats.
-- [x] Compare a selected boot against configurable earlier boots.
-- [x] Report newly observed signatures, counts, and history coverage.
-- [x] Include observed full-boot ranges and representative evidence.
-- [ ] Add equal-duration or startup-only comparison windows.
-
-## 3 — MVP report
-
-- [x] Identify package changes between the nearest usable absence baseline and
-  earliest target occurrence of a newly observed signature.
-- [ ] Search earlier history for first observed onset; define any fallback policy.
-- [x] Show temporal candidate changes alongside newly observed failures.
-- [ ] Provide commands to inspect source evidence.
-- [ ] Validate the complete workflow against reproducible regression scenarios.
+- [ ] Trace a selected signature or known family to its earliest observed boot.
+- [ ] Report unknown onset when history starts with the failure or has gaps.
+- [ ] Correlate package changes around a supported historical onset.
+- [ ] Shorten default reports and provide detailed evidence with `--verbose`.
+- [ ] Provide commands to inspect source evidence directly.
+- [ ] Add a complete CLI regression scenario from synthetic logs through correlation.
 
 ## Later
 
-- [ ] Add component-aware correlation for kernel, firmware, drivers, and services.
-- [ ] Account for package activation evidence where available.
-- [ ] Add distro adapters and additional package-history collectors.
-- [ ] Consider machine-readable output for scripts.
+- [ ] Support startup-only or equal-duration comparisons.
+- [ ] Add tested normalization rules and recognize failures logged below error priority.
+- [ ] Add component-aware filtering and candidate ranking.
+- [ ] Account for package activation when evidence is available.
+- [ ] Read rotated package logs and add distro adapters.
+- [ ] Consider machine-readable output and historical incident discovery.
 
-Cloud processing, AI diagnosis, background monitoring, kernel modules, and eBPF
-are outside the current scope.
+## Out of scope for now
+
+Cloud processing, AI diagnosis, background monitoring, kernel modules, and eBPF.

@@ -1,7 +1,14 @@
 # Contributing
 
-Start with the [README](README.md), [architecture](docs/architecture.md), and
-[roadmap](docs/roadmap.md). Follow the README for editable installation.
+I'm building What Broke? as a personal learning project, so I'm keeping development
+solo for now and won't be accepting pull requests. Bug reports and feedback are
+welcome. Thanks for taking a look!
+
+For bug reports, include the command you ran, what you expected, and what happened.
+Remove personal details and secrets from any log excerpts you share.
+
+To explore the code locally, start with the [README](README.md),
+[architecture](docs/architecture.md), and [roadmap](docs/roadmap.md).
 
 ## Local checks
 
@@ -20,7 +27,7 @@ Run the fixture-based tests with standard-library `unittest`:
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
-## Change guidelines
+## Maintainer notes
 
 - Keep distro-specific formats and paths out of the analysis engine.
 - Test parser and comparison behavior using small, sanitized fixtures.
