@@ -42,6 +42,7 @@ whatbroke errors --boot -1 --limit 50
 whatbroke compare                       # Current boot vs 5 earlier boots
 whatbroke compare --previous 15
 whatbroke compare --boot -1 --previous 5
+whatbroke compare --previous 5 --verbose # Exact variants, counts, and evidence
 ```
 
 `packages`, `boots`, and `errors` display up to 20 records by default.
@@ -79,8 +80,10 @@ Boot and error reports show available history, boot IDs, timestamps, and access
 limitations. Error collection includes system-journal priorities 0–3
 (emergency through error).
 
-Comparison groups messages by source and signature, preserving original evidence
-and per-boot counts:
+Comparison shows one overall status, then groups related messages once and
+summarizes recurring failures. Counts are target occurrences, not unique causes.
+Use `--verbose` for exact signatures, per-boot counts, boot details, and original
+evidence. Both modes collect the same data and return the same exit code.
 
 | Result | Meaning |
 | --- | --- |
@@ -93,9 +96,10 @@ With incomplete history, a recurring family's variant may instead be labelled
 “variant history incomplete.”
 
 Normalization handles known NetworkManager timestamp and pointer formats.
-Three narrow Wi-Fi rules group missing-`iw`, IWD interface-type, and IWD
-interface-index messages for `wlanN` names. Other device names, paths, and
-error codes remain distinct; this is not comprehensive Wi-Fi detection.
+Narrow Wi-Fi rules group missing-`iw`, IWD interface-type, interface-index,
+connection-aborted, and two `.Set` error formats. Recognized `wlanN` names and
+numeric IWD object paths can vary within a family. Different error types and
+codes remain separate; this is not comprehensive Wi-Fi detection.
 
 ### Investigate preceding changes
 
@@ -104,7 +108,8 @@ For newly observed failures, comparison lists package changes strictly between:
 1. The last observed record of the nearest earlier comparison boot without the signature.
 2. The earliest matching error in the selected boot.
 
-You get timestamps, actions, versions, source lines, and any coverage limitations.
+The default report lists each candidate package change and shared limitation once.
+Use `--verbose` for each failure's window, package versions, and source lines.
 These changes are investigation candidates, not proven causes or relevance rankings.
 
 Recurring failures and new variants do not trigger package correlation.

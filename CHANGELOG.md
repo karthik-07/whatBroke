@@ -23,6 +23,12 @@ Completed changes are recorded here. Future work lives in the
 
 ### Added
 
+- Concise default comparison reports and `compare --verbose` for exact signatures,
+  per-boot counts, and correlation evidence, with one overall status.
+- IWD `.Set` and connection-aborted failure families preserving distinct error types.
+- Eleven summary regression tests for grouping, totals, evidence, and limitations
+  (96 tests total).
+
 - Explicit visible-history limits in `boots`, `errors`, and `compare`, including
   the earliest discovered record and an explanation of the boot display limit.
 - Regression coverage for display limits and missing boot selections retaining
@@ -80,6 +86,9 @@ Completed changes are recorded here. Future work lives in the
 - Ignore rules for Python environments, caches, and build artifacts.
 
 ### Changed
+
+- Group recurring families once and deduplicate package candidates and shared
+  correlation limitations in the default report.
 
 - Removed the skipped-correlation notice from `compare` output; package collection
   still runs only for eligible newly observed failures.

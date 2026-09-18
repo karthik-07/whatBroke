@@ -10,16 +10,16 @@ See the [changelog](../CHANGELOG.md) for progress.
 - [x] System journal boot history and per-boot error-or-higher records.
 - [x] Visible history ranges, access limitations, and malformed-record reporting.
 - [x] Configurable boot comparison with exact signatures and per-boot counts.
-- [x] NetworkManager timestamp/pointer normalization and three Wi-Fi family rules.
+- [x] NetworkManager timestamp/pointer normalization and narrowly scoped Wi-Fi family rules.
 - [x] Temporal package candidates for newly observed failures.
 - [x] Synthetic tests for collection, comparison, correlation, and missing data.
+- [x] Concise comparison summaries with grouped totals and `--verbose` evidence.
 
 ## Next
 
 - [ ] Trace a selected signature or known family to its earliest observed boot.
 - [ ] Report unknown onset when history starts with the failure or has gaps.
 - [ ] Correlate package changes around a supported historical onset.
-- [ ] Shorten default reports and provide detailed evidence with `--verbose`.
 - [ ] Provide commands to inspect source evidence directly.
 - [ ] Add a complete CLI regression scenario from synthetic logs through correlation.
 

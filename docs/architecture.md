@@ -13,7 +13,7 @@ using Python's standard library and existing system commands.
 | `collectors/` | Read one Pacman log and query system journal boots and errors. |
 | `distros/arch/pacman.py` | Resolve the Pacman log path through `pacman-conf`, with a disclosed fallback. |
 | `analysis/compare.py` | Normalize signatures, compare counts, and orchestrate boot collection. |
-| `analysis/families.py` | Group three recognized Wi-Fi message patterns. |
+| `analysis/families.py` | Group recognized Wi-Fi message patterns without changing exact signatures. |
 | `analysis/correlate.py` | Select temporal package candidates from structured results. |
 | `reporting/` | Format evidence, counts, history limits, and diagnostics. |
 
@@ -55,9 +55,9 @@ requires at least one baseline boot and available status for every selected
 collection. Missing requested boots produce a coverage shortfall. Empty target
 messages are counted and excluded from signatures.
 
-Three source-specific rules group missing-`iw`, IWD interface-type, and IWD
-interface-index failures for `wlanN` names. Recognized IWD object-path numbers can
-vary; error codes remain distinct. Family context can identify a new variant of a
+Source-specific rules group missing-`iw`, IWD interface-type, interface-index,
+connection-aborted, and two `.Set` error formats. Recognized `wlanN` names and IWD
+object-path numbers can vary; error types and codes remain distinct. Family context can identify a new variant of a
 recurring failure without changing exact-signature counts. Family counts must not
 be added to exact counts.
 
@@ -76,6 +76,16 @@ boundary timestamps, and inconsistent time ordering. No fallback onset, causal
 ranking, or activation time is inferred.
 
 ## Extension boundaries
+
+`reporting/summary.py` groups findings by source and family (or exact signature
+when no family matches). Target counts sum exact counts once; baseline family
+counts are never added to target totals. Recurring family evidence takes precedence
+over variant novelty. Partial-history notices remain visible.
+
+The CLI completes correlation before rendering one overall status. Default output
+deduplicates candidate events by source path and line number and shared limitations
+by text. `--verbose` uses the detailed renderers for per-failure windows, exact
+variants, and evidence. Rendering mode does not alter collection or exit codes.
 
 Keep new package formats in collectors and distro configuration in `distros/`.
 Reuse journal collection for compatible systemd distributions. Keep rendering

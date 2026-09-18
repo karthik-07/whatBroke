@@ -45,9 +45,9 @@ def render_comparison(result: Comparison) -> str:
             lines.append('Family previous counts: ' + (', '.join(
                 str(count) if item.status == SourceStatus.AVAILABLE else f'{count} observed (incomplete)'
                 for count, item in zip(finding.family_previous_counts, result.previous)) or 'unavailable'))
-            lines.append(_safe('Previously observed interface names: ' +
+            lines.append(_safe('Previously observed device references: ' +
                                (', '.join(finding.previous_devices) or 'none observed')))
-            lines.append(_safe(f'Target variant interface name: {finding.target_device}'))
+            lines.append(_safe(f'Target variant device reference: {finding.target_device}'))
     if not result.findings:
         lines.append('No non-empty target error signatures observed; this does not establish system health.'
                      if result.target.status == SourceStatus.AVAILABLE else

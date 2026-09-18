@@ -4,9 +4,8 @@ from whatbroke.collectors.errors import collect_errors, boot_selector
 from whatbroke.reporting.errors import render_errors
 
 from whatbroke.analysis.correlate import correlate
-from whatbroke.reporting.correlate import render_correlation
 from whatbroke.analysis.compare import collect_comparison
-from whatbroke.reporting.compare import render_comparison
+from whatbroke.reporting.summary import overall_status, render_report
 
 import argparse
 from importlib.metadata import PackageNotFoundError, version
@@ -57,23 +56,22 @@ def main(argv: list[str] | None = None) -> int:
     compare.add_argument("--previous", type=positive_integer, default=5,
                          help="number of earlier visible boots to compare (default: 5)")
     compare.add_argument("--log-file", type=Path, help="Pacman log for package-change correlation")
+    compare.add_argument("--verbose", action="store_true", help="show exact signatures, boot counts, and correlation evidence")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
     if args.command == "compare":
         result = collect_comparison(args.boot, args.previous)
-        print(render_comparison(result))
-        status = result.status
+        correlation = None
         if any(f.classification == 'newly observed' for f in result.findings):
             location = resolve_log_path() if args.log_file is None else None
             packages = collect_pacman(args.log_file if args.log_file is not None else location.path)
             if location and location.warning:
                 packages.warnings.append(location.warning)
             correlation = correlate(result, packages)
-            print(render_correlation(correlation))
-            if correlation.status != SourceStatus.AVAILABLE:
-                status = SourceStatus.PARTIAL
+        status = overall_status(result, correlation)
+        print(render_report(result, correlation, verbose=args.verbose))
         return 0 if status == SourceStatus.AVAILABLE else 1
     if args.command == "errors":
         result = collect_errors(args.boot)
